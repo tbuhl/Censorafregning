@@ -1,6 +1,16 @@
 # Censorafregning
 
-Streamlit-app til estimat af censorhonorar ved danske universiteter, især SDU, DTU, AAU og AU.
+Streamlit-app til at estimere censorvederlag for teknisk-videnskabelige universitetsfag.
+
+Appen indeholder:
+
+- statslig censorsats som redigerbar timesats
+- SDU TEK Payment Standards fra september 2022 som konkrete normtider
+- mundtlige eksamener med 60 minutters minimum
+- skriftlige eksamener med fast oprettelsestid + minutter pr. besvarelse/sæt
+- rapporter, bachelorprojekter, diplomingeniør-afgangsprojekter og specialer
+- transport/udlæg som særskilt estimat
+- CSV-download af beregningen
 
 ## Kør lokalt
 
@@ -9,23 +19,14 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Kør i Streamlit Community Cloud
+## Deploy på Streamlit Cloud
 
-1. Push filerne til GitHub-repoet.
-2. Gå til Streamlit Community Cloud.
-3. Vælg repoet `tbuhl/Censorafregning`.
-4. Main file: `app.py`.
-5. Deploy.
+Main file path:
 
-## Vigtige antagelser
+```text
+app.py
+```
 
-- Universiteter/højere læreanstalter er sat til statslig censorsats A som default.
-- Normtid varierer efter den konkrete prøve og skal tjekkes mod eksamensplan/studieadministration.
-- Appen er en indikator, ikke en juridisk afregningsgaranti.
+## Forbehold
 
-## Kilder
-
-- Finansministeriets/Medarbejder- og Kompetencestyrelsens lønoversigt, censorvederlag kap. 8.2, satser pr. 1. april 2024.
-- Cirkulære om censorvederlag: vederlag beregnes efter censortime og konkrete tidsnormer for mundtlig/skriftlig prøve.
-- AU Tech beskriver 125/250-timers fortolkning for censorer.
-- SDU beskriver afregning via eForms.
+Dette er en indikator, ikke officiel afregning. Brug altid den konkrete norm og den seneste censorsats fra universitet/studieadministration.

@@ -8,34 +8,15 @@ CONFIG_PATH = Path(__file__).with_name("rates_and_norms.json")
 
 st.set_page_config(page_title="Censorafregning", page_icon="🧾", layout="wide")
 
-DEFAULT_CONFIG = {
-    "rates": {
-        "Sats A – universiteter/højere læreanstalter": 508.91,
-        "Sats B – øvrige videregående uddannelser": 421.07,
-        "Sats C – gymnasium/tekniker mv.": 350.13,
-        "Sats D": 304.92,
-        "Sats E": 252.02,
-        "Sats F": 208.55,
-    },
-    "vacation_pay_pct": 12.5,
-    "km_rate_low": 2.23,
-    "universities": ["SDU", "DTU", "AAU", "AU"],
-    "exam_templates": {
-        "Mundtlig – standard bachelor/kursus": {"minutes_per_student": 30, "fixed_minutes": 0, "count_by": "studerende"},
-        "Mundtlig – større projekt/speciale": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "studerende"},
-        "Skriftlig – kort opgave": {"minutes_per_student": 20, "fixed_minutes": 0, "count_by": "besvarelser"},
-        "Skriftlig – projekt/rapport": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "besvarelser"},
-        "Kombineret skriftlig + mundtlig": {"minutes_per_student": 90, "fixed_minutes": 0, "count_by": "studerende"},
-        "Gruppeeksamen": {"minutes_per_student": 0, "fixed_minutes": 60, "minutes_per_group": 60, "count_by": "grupper"},
-    },
-}
+
+def dk_number(value: float, decimals: int = 0) -> str:
+    text = f"{value:,.{decimals}f}"
+    return text.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def load_config() -> dict:
-    if CONFIG_PATH.exists():
-        with CONFIG_PATH.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    return DEFAULT_CONFIG
+    with CONFIG_PATH.open("r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def save_config(config: dict) -> None:
@@ -46,67 +27,103 @@ def save_config(config: dict) -> None:
 config = load_config()
 
 st.title("🧾 Censorafregning – aflønningsindikator")
-st.caption("Estimat for ekstern censur ved danske universiteter. Brug altid den konkrete censornorm fra eksamensplanen/studieadministrationen som endelig kilde.")
+st.caption(
+    "Indikator for ekstern censur ved teknisk-videnskabelige universitetsfag. "
+    "SDU TEK-normerne fra 2022 er indbygget; brug altid den konkrete norm fra studieadministrationen som endelig kilde."
+)
 
 with st.sidebar:
-    st.header("Globale satser")
+    st.header("Satser")
     university = st.selectbox("Universitet", config["universities"], index=0)
     rate_name = st.selectbox("Censorsats", list(config["rates"].keys()), index=0)
-    hourly_rate = st.number_input("Kr. pr. censortime", value=float(config["rates"][rate_name]), min_value=0.0, step=1.0)
-    vacation_pct = st.number_input("Feriegodtgørelse (%)", value=float(config.get("vacation_pay_pct", 12.5)), min_value=0.0, max_value=30.0, step=0.5)
+    hourly_rate = st.number_input(
+        "Kr. pr. censortime",
+        value=float(config["rates"][rate_name]),
+        min_value=0.0,
+        step=1.0,
+    )
+    vacation_pct = st.number_input(
+        "Feriegodtgørelse (%)",
+        value=float(config.get("vacation_pay_pct", 12.5)),
+        min_value=0.0,
+        max_value=30.0,
+        step=0.5,
+    )
     include_vacation = st.checkbox("Vis inkl. feriegodtgørelse", value=True)
+
     st.divider()
-    st.header("Transport")
-    include_transport = st.checkbox("Medtag kørselsgodtgørelse", value=False)
+    st.header("Transport / udlæg")
+    include_transport = st.checkbox("Medtag transport/udlæg", value=False)
     km = st.number_input("Km tur/retur", value=0.0, min_value=0.0, step=10.0, disabled=not include_transport)
     km_rate = st.number_input("Kr./km", value=float(config.get("km_rate_low", 2.23)), min_value=0.0, step=0.01, disabled=not include_transport)
+    other_expenses = st.number_input("Andre udlæg, kr.", value=0.0, min_value=0.0, step=100.0, disabled=not include_transport)
 
 st.subheader("Eksamenstyper")
 
+TEMPLATES = config["exam_templates"]
+template_names = list(TEMPLATES.keys())
+
 if "rows" not in st.session_state:
     st.session_state.rows = [
-        {"type": "Mundtlig – standard bachelor/kursus", "count": 11, "groups": 0, "minutes_per_unit": 30, "fixed_minutes": 0},
-        {"type": "Skriftlig – projekt/rapport", "count": 1, "groups": 0, "minutes_per_unit": 60, "fixed_minutes": 0},
+        {"type": "SDU TEK G – 30 min mundtlig/bachelor/semesterprojekt", "count": 11},
+        {"type": "SDU TEK Q – Civilingeniør bachelorprojekt / Final Project", "count": 1},
     ]
 
-col_a, col_b = st.columns([1, 4])
-with col_a:
+c_add, c_reset = st.columns([1, 4])
+with c_add:
     if st.button("+ Tilføj linje", use_container_width=True):
-        st.session_state.rows.append({"type": "Mundtlig – standard bachelor/kursus", "count": 1, "groups": 0, "minutes_per_unit": 30, "fixed_minutes": 0})
-with col_b:
+        st.session_state.rows.append({"type": "SDU TEK D – 15 min mundtlig eksamen", "count": 1})
+        st.rerun()
+with c_reset:
     if st.button("Nulstil eksempel", use_container_width=True):
-        st.session_state.rows = [{"type": "Mundtlig – standard bachelor/kursus", "count": 1, "groups": 0, "minutes_per_unit": 30, "fixed_minutes": 0}]
+        st.session_state.rows = [{"type": "SDU TEK D – 15 min mundtlig eksamen", "count": 1}]
+        st.rerun()
 
 rows_out = []
 for i, row in enumerate(st.session_state.rows):
-    with st.expander(f"Linje {i+1}: {row['type']}", expanded=True):
-        c1, c2, c3, c4, c5 = st.columns([2.5, 1, 1, 1, 1])
+    current_type = row.get("type", template_names[0])
+    if current_type not in TEMPLATES:
+        current_type = template_names[0]
+
+    with st.expander(f"Linje {i + 1}: {current_type}", expanded=True):
+        c1, c2, c3, c4, c5, c6 = st.columns([3.3, 1.0, 1.0, 1.0, 1.0, 0.8])
         with c1:
-            exam_type = st.selectbox("Type", list(config["exam_templates"].keys()), key=f"type_{i}", index=list(config["exam_templates"].keys()).index(row["type"]) if row["type"] in config["exam_templates"] else 0)
-        template = config["exam_templates"][exam_type]
-        default_minutes = int(template.get("minutes_per_student", template.get("minutes_per_group", 30)))
+            exam_type = st.selectbox("Type", template_names, key=f"type_{i}", index=template_names.index(current_type))
+        template = TEMPLATES[exam_type]
         with c2:
-            count_label = "Antal grupper" if template.get("count_by") == "grupper" else "Antal studerende/besvarelser"
-            count = st.number_input(count_label, min_value=0, value=int(row.get("count", 1)), step=1, key=f"count_{i}")
+            count = st.number_input(f"Antal {template.get('count_by', 'enheder')}", min_value=0, value=int(row.get("count", 1)), step=1, key=f"count_{i}")
         with c3:
-            minutes_per_unit = st.number_input("Minutter pr. enhed", min_value=0.0, value=float(row.get("minutes_per_unit", default_minutes)), step=5.0, key=f"mpu_{i}")
+            minutes_per_unit = st.number_input("Min/enhed", min_value=0.0, value=float(template.get("minutes_per_unit", 0)), step=5.0, key=f"mpu_{i}")
         with c4:
-            fixed_minutes = st.number_input("Fast tid, min.", min_value=0.0, value=float(row.get("fixed_minutes", template.get("fixed_minutes", 0))), step=5.0, key=f"fixed_{i}")
+            fixed_minutes = st.number_input("Fast min.", min_value=0.0, value=float(template.get("fixed_minutes", 0)), step=5.0, key=f"fixed_{i}")
         with c5:
+            minimum_minutes = st.number_input("Min. total", min_value=0.0, value=float(template.get("minimum_minutes", 0)), step=5.0, key=f"minimum_{i}")
+        with c6:
             remove = st.button("Fjern", key=f"remove_{i}", use_container_width=True)
+
         if remove:
             st.session_state.rows.pop(i)
             st.rerun()
-        total_minutes = count * minutes_per_unit + fixed_minutes
-        rows_out.append({
-            "Universitet": university,
-            "Eksamenstype": exam_type,
-            "Antal": count,
-            "Min/enhed": minutes_per_unit,
-            "Fast min": fixed_minutes,
-            "Timer": total_minutes / 60,
-            "Honorar ekskl. ferie": total_minutes / 60 * hourly_rate,
-        })
+
+        calculated_minutes = count * minutes_per_unit + fixed_minutes
+        paid_minutes = max(calculated_minutes, minimum_minutes) if count > 0 else 0
+        rows_out.append(
+            {
+                "Universitet": university,
+                "Eksamenstype": exam_type,
+                "Kategori": template.get("category", ""),
+                "Antal": count,
+                "Tælles efter": template.get("count_by", "enheder"),
+                "Min/enhed": minutes_per_unit,
+                "Fast min": fixed_minutes,
+                "Minimum min": minimum_minutes,
+                "Beregnet min": calculated_minutes,
+                "Afregnet min": paid_minutes,
+                "Timer": paid_minutes / 60,
+                "Honorar ekskl. ferie": paid_minutes / 60 * hourly_rate,
+                "Kilde": template.get("source", ""),
+            }
+        )
 
 result = pd.DataFrame(rows_out)
 if result.empty:
@@ -116,51 +133,89 @@ if result.empty:
 subtotal = float(result["Honorar ekskl. ferie"].sum())
 vacation = subtotal * vacation_pct / 100 if include_vacation else 0.0
 transport = km * km_rate if include_transport else 0.0
-total = subtotal + vacation + transport
+expenses = other_expenses if include_transport else 0.0
+total = subtotal + vacation + transport + expenses
 hours_total = float(result["Timer"].sum())
 
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Censortimer", f"{hours_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-m2.metric("Honorar ekskl. ferie", f"{subtotal:,.0f} kr.".replace(",", "."))
-m3.metric("Feriegodtgørelse", f"{vacation:,.0f} kr.".replace(",", "."))
-m4.metric("Estimeret total", f"{total:,.0f} kr.".replace(",", "."))
+m1, m2, m3, m4, m5 = st.columns(5)
+m1.metric("Censortimer", dk_number(hours_total, 2))
+m2.metric("Honorar ekskl. ferie", f"{dk_number(subtotal)} kr.")
+m3.metric("Feriegodtgørelse", f"{dk_number(vacation)} kr.")
+m4.metric("Transport/udlæg", f"{dk_number(transport + expenses)} kr.")
+m5.metric("Estimeret total", f"{dk_number(total)} kr.")
 
-st.dataframe(result.style.format({"Timer": "{:.2f}", "Honorar ekskl. ferie": "{:,.0f} kr.", "Min/enhed": "{:.0f}", "Fast min": "{:.0f}"}), use_container_width=True)
+st.dataframe(
+    result.style.format(
+        {
+            "Min/enhed": "{:.0f}",
+            "Fast min": "{:.0f}",
+            "Minimum min": "{:.0f}",
+            "Beregnet min": "{:.0f}",
+            "Afregnet min": "{:.0f}",
+            "Timer": "{:.2f}",
+            "Honorar ekskl. ferie": "{:,.0f} kr.",
+        }
+    ),
+    use_container_width=True,
+)
 
 csv = result.to_csv(index=False).encode("utf-8")
 st.download_button("Download beregning som CSV", data=csv, file_name="censorafregning.csv", mime="text/csv")
 
 st.divider()
-st.subheader("Redigér standardnormer")
-st.write("Ændr normerne her, hvis SDU/DTU/AAU/AU eller den konkrete eksamensansvarlige oplyser en anden norm.")
+st.subheader("SDU TEK-normer indbygget")
+st.markdown(
+    """
+- Mundtlige eksamener: 15/20/25/30/45/60 minutter pr. studerende med minimum 60 minutter pr. eksamen.
+- Skriftlige eksamener: MCQ, skriftlig ≤2 timer og skriftlig >2 timer med både fast oprettelsestid og minutter pr. besvarelse/sæt.
+- Rapporter/projekter: fra 30 minutter pr. mindre rapport til 360 minutter pr. civilingeniørspeciale.
+- Ifølge SDU TEK-vejledningen dækker normen aktiviteter relateret til eksamen, herunder forberedelse, eksamination, votering, karaktergivning, møder før/efter og evaluering.
+- Ved mundtlig eksamen betales også for studerende, der er synlige i Digital Exam, men udebliver på dagen.
+"""
+)
 
-norm_df = pd.DataFrame([
-    {"Eksamenstype": k, "Minutter pr. enhed": v.get("minutes_per_student", v.get("minutes_per_group", 0)), "Fast minutter": v.get("fixed_minutes", 0), "Tælles efter": v.get("count_by", "studerende")}
-    for k, v in config["exam_templates"].items()
-])
-edited = st.data_editor(norm_df, use_container_width=True, num_rows="dynamic")
-if st.button("Gem normer lokalt"):
-    new_templates = {}
-    for _, r in edited.iterrows():
-        if str(r["Eksamenstype"]).strip():
-            new_templates[str(r["Eksamenstype"]).strip()] = {
-                "minutes_per_student": float(r["Minutter pr. enhed"]),
-                "fixed_minutes": float(r["Fast minutter"]),
-                "count_by": str(r["Tælles efter"]).strip() or "studerende",
+with st.expander("Redigér standardnormer"):
+    st.write("Ændr normerne her, hvis DTU/AAU/AU eller den konkrete eksamensansvarlige oplyser en anden norm.")
+    norm_df = pd.DataFrame(
+        [
+            {
+                "Eksamenstype": k,
+                "Minutter pr. enhed": v.get("minutes_per_unit", 0),
+                "Fast minutter": v.get("fixed_minutes", 0),
+                "Minimum minutter": v.get("minimum_minutes", 0),
+                "Tælles efter": v.get("count_by", "enheder"),
+                "Kategori": v.get("category", ""),
+                "Kilde": v.get("source", ""),
             }
-    config["exam_templates"] = new_templates
-    config["rates"][rate_name] = hourly_rate
-    config["vacation_pay_pct"] = vacation_pct
-    config["km_rate_low"] = km_rate
-    save_config(config)
-    st.success("Gemt i rates_and_norms.json")
+            for k, v in TEMPLATES.items()
+        ]
+    )
+    edited = st.data_editor(norm_df, use_container_width=True, num_rows="dynamic")
+    if st.button("Gem normer lokalt"):
+        new_templates = {}
+        for _, r in edited.iterrows():
+            if str(r["Eksamenstype"]).strip():
+                new_templates[str(r["Eksamenstype"]).strip()] = {
+                    "minutes_per_unit": float(r["Minutter pr. enhed"]),
+                    "fixed_minutes": float(r["Fast minutter"]),
+                    "minimum_minutes": float(r["Minimum minutter"]),
+                    "count_by": str(r["Tælles efter"]).strip() or "enheder",
+                    "category": str(r.get("Kategori", "")).strip(),
+                    "source": str(r.get("Kilde", "")).strip(),
+                }
+        config["exam_templates"] = new_templates
+        config["rates"][rate_name] = hourly_rate
+        config["vacation_pay_pct"] = vacation_pct
+        config["km_rate_low"] = km_rate
+        save_config(config)
+        st.success("Gemt i rates_and_norms.json")
 
 with st.expander("Kilder og forbehold"):
     st.markdown(
         """
-- Finansministeriets/Medarbejder- og Kompetencestyrelsens lønoversigt viser censorvederlag pr. 1. april 2024: sats A 508,91 kr./time, sats B 421,07 kr./time, sats C 350,13 kr./time, sats D 304,92 kr./time, sats E 252,02 kr./time og sats F 208,55 kr./time.  
-- Cirkulæret om censorvederlag siger, at både skriftlig og mundtlig censur beregnes efter tidsnormer fastsat for den konkrete prøve, og at forberedelse/møder mv. normalt er inkluderet i censorvederlaget.  
-- For universiteter og højere læreanstalter anvendes normalt sats A. Normtid varierer efter eksamenstype og lokal praksis, så appens normer er indikatorer, ikke en garanti for udbetaling.  
-- Transport og evt. udlæg afregnes efter lokale regler og statens satser, hvis eksamen er fysisk.
+- Censortimesatsen i appen er sat til statens sats A for universiteter/højere læreanstalter. Kontrollér altid den nyeste lønoversigt.
+- SDU TEK-normerne er fra dokumentet *Payment Standards for External Co-examiners*, revideret september 2022.
+- Appen er en aflønningsindikator, ikke en officiel afregning. Den konkrete prøve, eksamensplan og studieadministration kan være afgørende.
+- Transport, udlæg, bro, hotel og diæter kan være særskilt afregning og er derfor lagt uden for censorhonoraret.
         """
     )

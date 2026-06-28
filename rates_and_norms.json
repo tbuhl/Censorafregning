@@ -9,13 +9,33 @@
   },
   "vacation_pay_pct": 12.5,
   "km_rate_low": 2.23,
-  "universities": ["SDU", "DTU", "AAU", "AU"],
+  "universities": [
+    "SDU TEK",
+    "DTU",
+    "AAU",
+    "AU",
+    "Custom"
+  ],
   "exam_templates": {
-    "Mundtlig – standard bachelor/kursus": {"minutes_per_student": 30, "fixed_minutes": 0, "count_by": "studerende"},
-    "Mundtlig – større projekt/speciale": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "studerende"},
-    "Skriftlig – kort opgave": {"minutes_per_student": 20, "fixed_minutes": 0, "count_by": "besvarelser"},
-    "Skriftlig – projekt/rapport": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "besvarelser"},
-    "Kombineret skriftlig + mundtlig": {"minutes_per_student": 90, "fixed_minutes": 0, "count_by": "studerende"},
-    "Gruppeeksamen": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "grupper"}
+    "SDU TEK A – MCQ mv.": {"minutes_per_unit": 10, "fixed_minutes": 160, "minimum_minutes": 0, "count_by": "besvarelser", "category": "Skriftlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK B – Skriftlig eksamen ≤ 2 timer": {"minutes_per_unit": 15, "fixed_minutes": 60, "minimum_minutes": 0, "count_by": "sæt/besvarelser", "category": "Skriftlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK C – Skriftlig eksamen > 2 timer": {"minutes_per_unit": 20, "fixed_minutes": 160, "minimum_minutes": 0, "count_by": "sæt/besvarelser", "category": "Skriftlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK D – 15 min mundtlig eksamen": {"minutes_per_unit": 15, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK E – 20 min mundtlig eksamen": {"minutes_per_unit": 20, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK F – 25 min mundtlig eksamen": {"minutes_per_unit": 25, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK G – 30 min mundtlig/bachelor/semesterprojekt": {"minutes_per_unit": 30, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK H – 45 min mundtlig afgangsprojekt": {"minutes_per_unit": 45, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK I – 60 min mundtlig speciale": {"minutes_per_unit": 60, "fixed_minutes": 0, "minimum_minutes": 60, "count_by": "studerende", "category": "Mundtlig eksamen", "source": "SDU TEK 2022"},
+    "SDU TEK J – Mindre opgave/rapport/portfolio": {"minutes_per_unit": 30, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK K – Mindre gruppeopgave/rapport/portfolio": {"minutes_per_unit": 60, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK L – Mindre projektrapport 10-19 ECTS": {"minutes_per_unit": 120, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK M – Semesterprojekt 5 ECTS": {"minutes_per_unit": 60, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK N – Semesterprojekt 10 ECTS": {"minutes_per_unit": 120, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK O – Semesterprojekt 15-20 ECTS": {"minutes_per_unit": 180, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK P – Omfattende projektrapport >20 ECTS": {"minutes_per_unit": 180, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Rapport/projekt", "source": "SDU TEK 2022"},
+    "SDU TEK Q – Civilingeniør bachelorprojekt / Final Project": {"minutes_per_unit": 180, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Afsluttende projekt", "source": "SDU TEK 2022"},
+    "SDU TEK R – Diplomingeniør afgangsprojekt": {"minutes_per_unit": 280, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Afsluttende projekt", "source": "SDU TEK 2022"},
+    "SDU TEK S – Civilingeniør speciale": {"minutes_per_unit": 360, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "rapporter", "category": "Afsluttende projekt", "source": "SDU TEK 2022"},
+    "Custom – manuel norm": {"minutes_per_unit": 60, "fixed_minutes": 0, "minimum_minutes": 0, "count_by": "enheder", "category": "Custom", "source": "Manuel"}
   }
 }
