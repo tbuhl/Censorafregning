@@ -30,3 +30,8 @@ app.py
 ## Forbehold
 
 Dette er en indikator, ikke officiel afregning. Brug altid den konkrete norm og den seneste censorsats fra universitet/studieadministration.
+
+
+## Version 3
+
+Denne version giver mulighed for at lægge særskilt forberedelse/rapportlæsning oveni mundtlig eksamen. Det er især relevant ved projekt-, bachelor- og specialeeksamener, hvor der både kan være normtid for skriftligt materiale og normtid for den mundtlige eksamination.

@@ -90,10 +90,11 @@ for i, row in enumerate(st.session_state.rows):
         with c1:
             exam_type = st.selectbox("Type", template_names, key=f"type_{i}", index=template_names.index(current_type))
         template = TEMPLATES[exam_type]
+        is_oral = "Mundtlig" in str(template.get("category", ""))
         with c2:
             count = st.number_input(f"Antal {template.get('count_by', 'enheder')}", min_value=0, value=int(row.get("count", 1)), step=1, key=f"count_{i}")
         with c3:
-            minutes_per_unit = st.number_input("Min/enhed", min_value=0.0, value=float(template.get("minutes_per_unit", 0)), step=5.0, key=f"mpu_{i}")
+            minutes_per_unit = st.number_input("Eksamen min/enhed", min_value=0.0, value=float(template.get("minutes_per_unit", 0)), step=5.0, key=f"mpu_{i}")
         with c4:
             fixed_minutes = st.number_input("Fast min.", min_value=0.0, value=float(template.get("fixed_minutes", 0)), step=5.0, key=f"fixed_{i}")
         with c5:
@@ -101,12 +102,31 @@ for i, row in enumerate(st.session_state.rows):
         with c6:
             remove = st.button("Fjern", key=f"remove_{i}", use_container_width=True)
 
+        include_prep = False
+        prep_count = count
+        prep_minutes_per_unit = 0.0
+        prep_fixed_minutes = 0.0
+        if is_oral:
+            st.caption("Ved mundtlig projekt-/rapporteksamen kan du lægge rapportlæsning/forberedelse oveni selve eksaminationstiden.")
+            p1, p2, p3, p4 = st.columns([1.4, 1.0, 1.0, 2.0])
+            with p1:
+                include_prep = st.checkbox("Medtag særskilt forberedelse/rapportlæsning", value=False, key=f"prep_on_{i}")
+            with p2:
+                prep_count = st.number_input("Antal rapporter/sæt", min_value=0, value=count, step=1, key=f"prep_count_{i}", disabled=not include_prep)
+            with p3:
+                prep_minutes_per_unit = st.number_input("Forberedelse min/enhed", min_value=0.0, value=0.0, step=10.0, key=f"prep_mpu_{i}", disabled=not include_prep)
+            with p4:
+                prep_fixed_minutes = st.number_input("Fast forberedelse min.", min_value=0.0, value=0.0, step=10.0, key=f"prep_fixed_{i}", disabled=not include_prep)
+
         if remove:
             st.session_state.rows.pop(i)
             st.rerun()
 
-        calculated_minutes = count * minutes_per_unit + fixed_minutes
-        paid_minutes = max(calculated_minutes, minimum_minutes) if count > 0 else 0
+        exam_minutes = count * minutes_per_unit + fixed_minutes
+        exam_paid_minutes = max(exam_minutes, minimum_minutes) if count > 0 else 0
+        prep_minutes = (prep_count * prep_minutes_per_unit + prep_fixed_minutes) if include_prep else 0
+        calculated_minutes = exam_minutes + prep_minutes
+        paid_minutes = exam_paid_minutes + prep_minutes
         rows_out.append(
             {
                 "Universitet": university,
@@ -114,9 +134,10 @@ for i, row in enumerate(st.session_state.rows):
                 "Kategori": template.get("category", ""),
                 "Antal": count,
                 "Tælles efter": template.get("count_by", "enheder"),
-                "Min/enhed": minutes_per_unit,
-                "Fast min": fixed_minutes,
-                "Minimum min": minimum_minutes,
+                "Eksamen min/enhed": minutes_per_unit,
+                "Fast eksamen min": fixed_minutes,
+                "Minimum eksamen min": minimum_minutes,
+                "Forberedelse min": prep_minutes,
                 "Beregnet min": calculated_minutes,
                 "Afregnet min": paid_minutes,
                 "Timer": paid_minutes / 60,
@@ -147,9 +168,10 @@ m5.metric("Estimeret total", f"{dk_number(total)} kr.")
 st.dataframe(
     result.style.format(
         {
-            "Min/enhed": "{:.0f}",
-            "Fast min": "{:.0f}",
-            "Minimum min": "{:.0f}",
+            "Eksamen min/enhed": "{:.0f}",
+            "Fast eksamen min": "{:.0f}",
+            "Minimum eksamen min": "{:.0f}",
+            "Forberedelse min": "{:.0f}",
             "Beregnet min": "{:.0f}",
             "Afregnet min": "{:.0f}",
             "Timer": "{:.2f}",
@@ -167,6 +189,7 @@ st.subheader("SDU TEK-normer indbygget")
 st.markdown(
     """
 - Mundtlige eksamener: 15/20/25/30/45/60 minutter pr. studerende med minimum 60 minutter pr. eksamen.
+- Ved mundtlige projekt-/rapporteksamener kan særskilt forberedelse/rapportlæsning tilføjes oveni selve mundtlige eksaminationstid.
 - Skriftlige eksamener: MCQ, skriftlig ≤2 timer og skriftlig >2 timer med både fast oprettelsestid og minutter pr. besvarelse/sæt.
 - Rapporter/projekter: fra 30 minutter pr. mindre rapport til 360 minutter pr. civilingeniørspeciale.
 - Ifølge SDU TEK-vejledningen dækker normen aktiviteter relateret til eksamen, herunder forberedelse, eksamination, votering, karaktergivning, møder før/efter og evaluering.
