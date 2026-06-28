@@ -1,0 +1,21 @@
+{
+  "rates": {
+    "Sats A – universiteter/højere læreanstalter": 508.91,
+    "Sats B – øvrige videregående uddannelser": 421.07,
+    "Sats C – gymnasium/tekniker mv.": 350.13,
+    "Sats D": 304.92,
+    "Sats E": 252.02,
+    "Sats F": 208.55
+  },
+  "vacation_pay_pct": 12.5,
+  "km_rate_low": 2.23,
+  "universities": ["SDU", "DTU", "AAU", "AU"],
+  "exam_templates": {
+    "Mundtlig – standard bachelor/kursus": {"minutes_per_student": 30, "fixed_minutes": 0, "count_by": "studerende"},
+    "Mundtlig – større projekt/speciale": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "studerende"},
+    "Skriftlig – kort opgave": {"minutes_per_student": 20, "fixed_minutes": 0, "count_by": "besvarelser"},
+    "Skriftlig – projekt/rapport": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "besvarelser"},
+    "Kombineret skriftlig + mundtlig": {"minutes_per_student": 90, "fixed_minutes": 0, "count_by": "studerende"},
+    "Gruppeeksamen": {"minutes_per_student": 60, "fixed_minutes": 0, "count_by": "grupper"}
+  }
+}
